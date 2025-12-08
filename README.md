@@ -7,6 +7,7 @@ Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com **React**
 - ✨ Renderização com Canvas 2D API
 - 🎯 Sistema de mira inteligente seguindo o mouse
 - ⌨️ Sistema de movimentação com teclado (WASD)
+- 🎵 Trilha sonora imersiva ("Unstoppable Force")
 - 🎨 Interface responsiva
 - 📱 Suporte a diferentes resoluções
 - 🔧 Configuração com Biome para linting e formatação
@@ -97,6 +98,14 @@ A versão otimizada será gerada na pasta `dist/`.
 | **S**     | Mover para baixo                      |
 | **D**     | Mover para a direita                  |
 | **Mouse** | Rotaciona a mira na direção do cursor |
+
+## 🎵 Trilha Sonora
+
+O jogo conta com uma trilha sonora imersiva:
+
+- **Música de Fundo**: "Unstoppable Force" - Toca continuamente durante o jogo, criando uma atmosfera épica e envolvente.
+
+A música está localizada em `src/assets/audio/Unstoppable Force.mp3` e é carregada automaticamente quando o jogo inicia.
 
 ## 🛠️ Ferramentas de Desenvolvimento
 

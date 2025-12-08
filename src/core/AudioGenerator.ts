@@ -1,13 +1,15 @@
 /**
- * Gerador de música procedural para o jogo
- * Cria uma batida agitada usando Web Audio API
- * Sem dependências externas - tudo é síntese de áudio
+ * Gerador de áudio para o jogo
+ * Carrega música de fundo do arquivo MP3 e cria efeitos sonoros com Web Audio API
  */
+
+import backgroundMusicUrl from "../assets/audio/Unstoppable Force.mp3";
 
 export class AudioGenerator {
   private audioContext: AudioContext | null = null;
   private isPlaying = false;
   private masterGain: GainNode | null = null;
+  private backgroundAudioElement: HTMLAudioElement | null = null;
   private oscillators: OscillatorNode[] = [];
   private gainNodes: GainNode[] = [];
 
@@ -16,8 +18,9 @@ export class AudioGenerator {
    */
   private initAudioContext(): void {
     if (!this.audioContext) {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const AudioContextClass =
+        window.AudioContext || (window as any).webkitAudioContext;
+      const audioContext = new AudioContextClass();
       this.audioContext = audioContext;
 
       // Master volume
@@ -28,13 +31,26 @@ export class AudioGenerator {
   }
 
   /**
+   * Inicializa o elemento de áudio para a música de fundo
+   */
+  private initBackgroundAudio(): void {
+    if (!this.backgroundAudioElement) {
+      const audio = new Audio();
+      audio.src = backgroundMusicUrl;
+      audio.loop = true;
+      audio.volume = 0.5;
+      this.backgroundAudioElement = audio;
+    }
+  }
+
+  /**
    * Para todo áudio em reprodução
    */
   private stopAllOscillators(): void {
     for (const osc of this.oscillators) {
       try {
         osc.stop();
-      } catch (e) {
+      } catch {
         // Oscilador já foi parado
       }
     }
@@ -43,110 +59,28 @@ export class AudioGenerator {
   }
 
   /**
-   * Toca uma nota musical
-   */
-  private playNote(
-    frequency: number,
-    duration: number,
-    startTime: number
-  ): void {
-    if (!this.audioContext || !this.masterGain) return;
-
-    const osc = this.audioContext.createOscillator();
-    const gain = this.audioContext.createGain();
-
-    osc.frequency.value = frequency;
-    osc.type = "square"; // Som retangular para efeito chippy/8-bit
-
-    gain.gain.setValueAtTime(0.1, startTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration * 0.9);
-    gain.gain.setValueAtTime(0, startTime + duration);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-
-    this.oscillators.push(osc);
-    this.gainNodes.push(gain);
-  }
-
-  /**
-   * Toca acordes (múltiplas notas simultaneamente)
-   */
-  private playChord(
-    frequencies: number[],
-    duration: number,
-    startTime: number
-  ): void {
-    for (const freq of frequencies) {
-      this.playNote(freq, duration, startTime);
-    }
-  }
-
-  /**
    * Inicia a música de fundo em loop
    */
   play(): void {
     this.initAudioContext();
+    this.initBackgroundAudio();
 
-    if (this.isPlaying) return;
+    if (!this.backgroundAudioElement) return;
+
+    if (this.isPlaying) {
+      // Se já está tocando, apenas certifique-se de que continua tocando
+      if (this.backgroundAudioElement.paused) {
+        this.backgroundAudioElement.play();
+      }
+      return;
+    }
+
     this.isPlaying = true;
 
-    // Notas em Hz (frequências)
-    const C4 = 262;
-    const D4 = 294;
-    const E4 = 330;
-    const F4 = 349;
-    const G4 = 392;
-    const A4 = 440;
-    const B4 = 494;
-    const C5 = 523;
-
-    // Loop a música a cada 4 segundos
-    const loopDuration = 4;
-    const startTime = this.audioContext!.currentTime;
-
-    const playLoop = (loopCount: number) => {
-      const loopStartTime = startTime + loopCount * loopDuration;
-
-      if (!this.isPlaying) return;
-
-      // Padrão rítmico agitado (kick+snare pattern)
-      const beatDuration = 0.25; // 16th notes em 4/4
-
-      // Batida base (baixa frequência) - kick drum
-      this.playNote(60, 0.1, loopStartTime); // Sub bass
-      this.playNote(120, 0.15, loopStartTime + beatDuration * 2);
-      this.playNote(60, 0.1, loopStartTime + beatDuration * 4);
-      this.playNote(120, 0.15, loopStartTime + beatDuration * 6);
-      this.playNote(60, 0.1, loopStartTime + beatDuration * 8);
-      this.playNote(90, 0.12, loopStartTime + beatDuration * 10);
-
-      // Melodia agitada principal
-      this.playNote(E4, beatDuration * 1.5, loopStartTime);
-      this.playNote(G4, beatDuration, loopStartTime + beatDuration * 1.5);
-      this.playNote(B4, beatDuration * 1.5, loopStartTime + beatDuration * 2.5);
-      this.playNote(A4, beatDuration, loopStartTime + beatDuration * 4);
-      this.playNote(G4, beatDuration * 1.5, loopStartTime + beatDuration * 5);
-      this.playNote(E4, beatDuration, loopStartTime + beatDuration * 6.5);
-      this.playNote(F4, beatDuration * 1.5, loopStartTime + beatDuration * 7.5);
-      this.playNote(D4, beatDuration, loopStartTime + beatDuration * 9);
-
-      // Counter-melody harmônica
-      this.playNote(C4, beatDuration * 2, loopStartTime + beatDuration * 1);
-      this.playNote(E4, beatDuration * 2, loopStartTime + beatDuration * 3);
-      this.playNote(G4, beatDuration * 2, loopStartTime + beatDuration * 5);
-      this.playNote(F4, beatDuration * 2, loopStartTime + beatDuration * 7);
-
-      // Próximo loop
-      if (this.isPlaying) {
-        setTimeout(() => playLoop(loopCount + 1), loopDuration * 1000 - 100);
-      }
-    };
-
-    playLoop(0);
+    // Inicia a reprodução da música de fundo
+    this.backgroundAudioElement.play().catch(() => {
+      // O autoplay pode estar desabilitado, a música será iniciada na primeira interação
+    });
   }
 
   /**
@@ -154,6 +88,10 @@ export class AudioGenerator {
    */
   stop(): void {
     this.isPlaying = false;
+    if (this.backgroundAudioElement) {
+      this.backgroundAudioElement.pause();
+      this.backgroundAudioElement.currentTime = 0;
+    }
     this.stopAllOscillators();
   }
 
@@ -205,7 +143,7 @@ export class AudioGenerator {
     osc.type = "square";
 
     gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0, now + duration);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
     osc.connect(gain);
     gain.connect(this.masterGain);
@@ -235,7 +173,7 @@ export class AudioGenerator {
       osc.type = "triangle";
 
       gain.gain.setValueAtTime(0.15, now + delay);
-      gain.gain.exponentialRampToValueAtTime(0, now + delay + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.15);
 
       osc.connect(gain);
       gain.connect(this.masterGain);
@@ -251,6 +189,9 @@ export class AudioGenerator {
   setVolume(volume: number): void {
     if (this.masterGain) {
       this.masterGain.gain.value = Math.max(0, Math.min(1, volume));
+    }
+    if (this.backgroundAudioElement) {
+      this.backgroundAudioElement.volume = Math.max(0, Math.min(1, volume));
     }
   }
 

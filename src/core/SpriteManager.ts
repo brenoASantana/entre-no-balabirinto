@@ -72,9 +72,7 @@ export class SpriteManager {
   /**
    * Carrega múltiplas sprites em paralelo
    */
-  async loadSprites(
-    sprites: Array<{ name: string; path: string }>
-  ): Promise<SpriteAsset[]> {
+  async loadSprites(sprites: Array<{ name: string; path: string }>): Promise<SpriteAsset[]> {
     const promises = sprites.map((s) => this.loadSprite(s.name, s.path));
     return Promise.all(promises);
   }
@@ -104,7 +102,7 @@ export class SpriteManager {
     y: number,
     width?: number,
     height?: number,
-    rotation: number = 0
+    rotation: number = 0,
   ): void {
     const sprite = this.getSprite(name);
     if (!sprite || !sprite.loaded) {
@@ -136,7 +134,7 @@ export class SpriteManager {
     width: number,
     height: number,
     alpha: number = 1,
-    rotation: number = 0
+    rotation: number = 0,
   ): void {
     const sprite = this.getSprite(name);
     if (!sprite || !sprite.loaded) {
@@ -168,7 +166,7 @@ export class SpriteManager {
     width: number,
     height: number,
     tileWidth: number,
-    tileHeight: number
+    tileHeight: number,
   ): void {
     const sprite = this.getSprite(name);
     if (!sprite || !sprite.loaded) {
@@ -188,7 +186,7 @@ export class SpriteManager {
           tx,
           ty,
           drawWidth,
-          drawHeight
+          drawHeight,
         );
       }
     }

@@ -16,8 +16,7 @@ export class AudioGenerator {
    */
   private initAudioContext(): void {
     if (!this.audioContext) {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.audioContext = audioContext;
 
       // Master volume
@@ -45,11 +44,7 @@ export class AudioGenerator {
   /**
    * Toca uma nota musical
    */
-  private playNote(
-    frequency: number,
-    duration: number,
-    startTime: number
-  ): void {
+  private playNote(frequency: number, duration: number, startTime: number): void {
     if (!this.audioContext || !this.masterGain) return;
 
     const osc = this.audioContext.createOscillator();
@@ -75,11 +70,7 @@ export class AudioGenerator {
   /**
    * Toca acordes (múltiplas notas simultaneamente)
    */
-  private playChord(
-    frequencies: number[],
-    duration: number,
-    startTime: number
-  ): void {
+  private playChord(frequencies: number[], duration: number, startTime: number): void {
     for (const freq of frequencies) {
       this.playNote(freq, duration, startTime);
     }

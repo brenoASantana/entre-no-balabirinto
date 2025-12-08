@@ -18,14 +18,7 @@ import {
   PLAYER_WIDTH,
   WAVE_DELAY,
 } from "../game/constants";
-import {
-  Bullet,
-  Enemy,
-  GameState,
-  KeysPressed,
-  PlayerState,
-  Vector2,
-} from "../game/types";
+import { Bullet, Enemy, GameState, KeysPressed, PlayerState, Vector2 } from "../game/types";
 import { clamp, getAngle, normalizeVector } from "../game/utils/math";
 
 /**
@@ -131,10 +124,8 @@ export class GameEngine {
    * Dispara uma bala
    */
   private shoot(): void {
-    const playerCenterX =
-      this.gameState.player.position.x + this.gameState.player.width / 2;
-    const playerCenterY =
-      this.gameState.player.position.y + this.gameState.player.height / 2;
+    const playerCenterX = this.gameState.player.position.x + this.gameState.player.width / 2;
+    const playerCenterY = this.gameState.player.position.y + this.gameState.player.height / 2;
 
     const angle = this.gameState.player.angle;
     const bullet: Bullet = {
@@ -159,8 +150,7 @@ export class GameEngine {
    */
   private spawnWave(): void {
     const enemiesToSpawn =
-      INITIAL_ENEMIES_PER_WAVE +
-      (this.gameState.wave - 1) * ENEMIES_INCREASE_PER_WAVE;
+      INITIAL_ENEMIES_PER_WAVE + (this.gameState.wave - 1) * ENEMIES_INCREASE_PER_WAVE;
 
     for (let i = 0; i < enemiesToSpawn; i++) {
       // Spawn em posições aleatórias nas bordas
@@ -231,33 +221,29 @@ export class GameEngine {
       y: normalized.y * speed,
     };
 
-    this.gameState.player.position.x +=
-      this.gameState.player.velocity.x * deltaTime;
-    this.gameState.player.position.y +=
-      this.gameState.player.velocity.y * deltaTime;
+    this.gameState.player.position.x += this.gameState.player.velocity.x * deltaTime;
+    this.gameState.player.position.y += this.gameState.player.velocity.y * deltaTime;
 
     this.gameState.player.position.x = clamp(
       this.gameState.player.position.x,
       0,
-      GAME_WIDTH - this.gameState.player.width
+      GAME_WIDTH - this.gameState.player.width,
     );
     this.gameState.player.position.y = clamp(
       this.gameState.player.position.y,
       0,
-      GAME_HEIGHT - this.gameState.player.height
+      GAME_HEIGHT - this.gameState.player.height,
     );
 
     // ==================== PLAYER ROTATION ====================
-    const playerCenterX =
-      this.gameState.player.position.x + this.gameState.player.width / 2;
-    const playerCenterY =
-      this.gameState.player.position.y + this.gameState.player.height / 2;
+    const playerCenterX = this.gameState.player.position.x + this.gameState.player.width / 2;
+    const playerCenterY = this.gameState.player.position.y + this.gameState.player.height / 2;
 
     this.gameState.player.angle = getAngle(
       playerCenterX,
       playerCenterY,
       this.gameState.mousePosition.x,
-      this.gameState.mousePosition.y
+      this.gameState.mousePosition.y,
     );
 
     // ==================== SHOOTING ====================
@@ -325,9 +311,7 @@ export class GameEngine {
       }
 
       // Checar colisão com player
-      if (
-        this.checkCircleRectCollision(playerCenterX, playerCenterY, 20, enemy)
-      ) {
+      if (this.checkCircleRectCollision(playerCenterX, playerCenterY, 20, enemy)) {
         this.damagePlayer(enemy.damage);
       }
     }
@@ -340,12 +324,7 @@ export class GameEngine {
         const enemy = this.gameState.enemies[j];
 
         if (
-          this.checkCircleRectCollision(
-            bullet.position.x,
-            bullet.position.y,
-            bullet.radius,
-            enemy
-          )
+          this.checkCircleRectCollision(bullet.position.x, bullet.position.y, bullet.radius, enemy)
         ) {
           // Damage do enemy
           enemy.health -= 10; // Default 10 dano por tiro
@@ -373,18 +352,10 @@ export class GameEngine {
     circleX: number,
     circleY: number,
     radius: number,
-    rect: { position: Vector2; width: number; height: number }
+    rect: { position: Vector2; width: number; height: number },
   ): boolean {
-    const closestX = clamp(
-      circleX,
-      rect.position.x,
-      rect.position.x + rect.width
-    );
-    const closestY = clamp(
-      circleY,
-      rect.position.y,
-      rect.position.y + rect.height
-    );
+    const closestX = clamp(circleX, rect.position.x, rect.position.x + rect.width);
+    const closestY = clamp(circleY, rect.position.y, rect.position.y + rect.height);
 
     const distX = circleX - closestX;
     const distY = circleY - closestY;
@@ -396,10 +367,7 @@ export class GameEngine {
    * Causa dano ao player
    */
   private damagePlayer(damage: number): void {
-    this.gameState.player.health = Math.max(
-      0,
-      this.gameState.player.health - damage
-    );
+    this.gameState.player.health = Math.max(0, this.gameState.player.health - damage);
   }
 
   /**

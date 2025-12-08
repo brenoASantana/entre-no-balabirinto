@@ -1,18 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GameEngine, SpriteManager } from "../../core";
-import {
-  BULLET_RADIUS,
-  GAME_HEIGHT,
-  GAME_WIDTH,
-  PLAYER_HEIGHT,
-  PLAYER_WIDTH,
-} from "../../game";
-import {
-  useAudio,
-  useGameLoop,
-  useMouse,
-  usePlayerMovement,
-} from "../../hooks";
+import { BULLET_RADIUS, GAME_HEIGHT, GAME_WIDTH, PLAYER_HEIGHT, PLAYER_WIDTH } from "../../game";
+import { useAudio, useGameLoop, useMouse, usePlayerMovement } from "../../hooks";
 import "../../styles/App.css";
 
 const GameCanvas: React.FC = () => {
@@ -124,43 +113,29 @@ const GameCanvas: React.FC = () => {
           enemy.position.x,
           enemy.position.y,
           enemy.width,
-          enemy.height
+          enemy.height,
         );
       } else {
         // Fallback: desenhar como retângulo colorido
         ctx.fillStyle = "#ff3333";
-        ctx.fillRect(
-          enemy.position.x,
-          enemy.position.y,
-          enemy.width,
-          enemy.height
-        );
+        ctx.fillRect(enemy.position.x, enemy.position.y, enemy.width, enemy.height);
       }
 
       // Barra de vida
       const healthBarWidth = enemy.width;
       const healthBarHeight = 4;
       ctx.fillStyle = "#333333";
-      ctx.fillRect(
-        enemy.position.x,
-        enemy.position.y - 8,
-        healthBarWidth,
-        healthBarHeight
-      );
+      ctx.fillRect(enemy.position.x, enemy.position.y - 8, healthBarWidth, healthBarHeight);
 
       // Barra de vida preenchida
       const healthPercent = enemy.health / enemy.maxHealth;
       ctx.fillStyle =
-        healthPercent > 0.5
-          ? "#00ff00"
-          : healthPercent > 0.25
-          ? "#ffff00"
-          : "#ff0000";
+        healthPercent > 0.5 ? "#00ff00" : healthPercent > 0.25 ? "#ffff00" : "#ff0000";
       ctx.fillRect(
         enemy.position.x,
         enemy.position.y - 8,
         healthBarWidth * healthPercent,
-        healthBarHeight
+        healthBarHeight,
       );
     }
 
@@ -168,13 +143,7 @@ const GameCanvas: React.FC = () => {
     ctx.fillStyle = "#ffff00";
     for (const bullet of gameState.bullets) {
       ctx.beginPath();
-      ctx.arc(
-        bullet.position.x,
-        bullet.position.y,
-        BULLET_RADIUS,
-        0,
-        Math.PI * 2
-      );
+      ctx.arc(bullet.position.x, bullet.position.y, BULLET_RADIUS, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -188,25 +157,17 @@ const GameCanvas: React.FC = () => {
         player.position.y,
         PLAYER_WIDTH,
         PLAYER_HEIGHT,
-        player.angle
+        player.angle,
       );
     } else {
       // Fallback: desenhar como retângulo com triângulo
       ctx.save();
-      ctx.translate(
-        player.position.x + PLAYER_WIDTH / 2,
-        player.position.y + PLAYER_HEIGHT / 2
-      );
+      ctx.translate(player.position.x + PLAYER_WIDTH / 2, player.position.y + PLAYER_HEIGHT / 2);
       ctx.rotate(player.angle);
 
       // Corpo do jogador
       ctx.fillStyle = "#00ff00";
-      ctx.fillRect(
-        -PLAYER_WIDTH / 2,
-        -PLAYER_HEIGHT / 2,
-        PLAYER_WIDTH,
-        PLAYER_HEIGHT
-      );
+      ctx.fillRect(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, PLAYER_WIDTH, PLAYER_HEIGHT);
 
       // Indicador de direção (triângulo apontando para frente)
       ctx.fillStyle = "#ffff00";
@@ -231,18 +192,8 @@ const GameCanvas: React.FC = () => {
     ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
 
     const healthPercent = player.health / player.maxHealth;
-    ctx.fillStyle =
-      healthPercent > 0.5
-        ? "#00ff00"
-        : healthPercent > 0.25
-        ? "#ffff00"
-        : "#ff0000";
-    ctx.fillRect(
-      healthBarX,
-      healthBarY,
-      healthBarWidth * healthPercent,
-      healthBarHeight
-    );
+    ctx.fillStyle = healthPercent > 0.5 ? "#00ff00" : healthPercent > 0.25 ? "#ffff00" : "#ff0000";
+    ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercent, healthBarHeight);
 
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 2;
@@ -254,7 +205,7 @@ const GameCanvas: React.FC = () => {
     ctx.fillText(
       `HP: ${Math.round(player.health)}/${player.maxHealth}`,
       healthBarX + 210,
-      healthBarY + 15
+      healthBarY + 15,
     );
 
     // Volume control visual
@@ -268,12 +219,7 @@ const GameCanvas: React.FC = () => {
     ctx.fillRect(volumeBarX, volumeBarY, volumeBarWidth, volumeBarHeight);
 
     ctx.fillStyle = "#00aaff";
-    ctx.fillRect(
-      volumeBarX,
-      volumeBarY,
-      volumeBarWidth * currentVolume,
-      volumeBarHeight
-    );
+    ctx.fillRect(volumeBarX, volumeBarY, volumeBarWidth * currentVolume, volumeBarHeight);
 
     ctx.strokeStyle = "#00aaff";
     ctx.lineWidth = 1;
@@ -298,11 +244,7 @@ const GameCanvas: React.FC = () => {
     const timeSeconds = Math.floor(gameState.timeAlive);
     const minutes = Math.floor(timeSeconds / 60);
     const seconds = timeSeconds % 60;
-    ctx.fillText(
-      `Time: ${minutes}:${seconds.toString().padStart(2, "0")}`,
-      GAME_WIDTH - 250,
-      130
-    );
+    ctx.fillText(`Time: ${minutes}:${seconds.toString().padStart(2, "0")}`, GAME_WIDTH - 250, 130);
 
     // Game Over
     if (!gameState.isRunning) {
@@ -318,26 +260,14 @@ const GameCanvas: React.FC = () => {
 
       ctx.fillStyle = "#ffffff";
       ctx.font = "20px Arial";
-      ctx.fillText(
-        `Final Score: ${gameState.score}`,
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 20
-      );
-      ctx.fillText(
-        `Wave Reached: ${gameState.wave}`,
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 50
-      );
+      ctx.fillText(`Final Score: ${gameState.score}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20);
+      ctx.fillText(`Wave Reached: ${gameState.wave}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 50);
       ctx.fillText(
         `Time Alive: ${minutes}:${seconds.toString().padStart(2, "0")}`,
         GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 80
+        GAME_HEIGHT / 2 + 80,
       );
-      ctx.fillText(
-        "Reload to play again",
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 120
-      );
+      ctx.fillText("Reload to play again", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 120);
 
       ctx.textAlign = "left";
     }
