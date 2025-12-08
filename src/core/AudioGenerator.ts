@@ -184,6 +184,116 @@ export class AudioGenerator {
   }
 
   /**
+   * Som de explosão/morte de inimigo (com boom profundo)
+   */
+  playEnemyDeathSound(): void {
+    this.initAudioContext();
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Boom grave (20Hz)
+    const boomOsc = this.audioContext.createOscillator();
+    const boomGain = this.audioContext.createGain();
+    boomOsc.type = "sine";
+    boomOsc.frequency.setValueAtTime(40, now);
+    boomOsc.frequency.exponentialRampToValueAtTime(10, now + 0.3);
+    boomGain.gain.setValueAtTime(0.4, now);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    boomOsc.connect(boomGain);
+    boomGain.connect(this.masterGain);
+
+    // Som médio de explosão (crispy)
+    const midOsc = this.audioContext.createOscillator();
+    const midGain = this.audioContext.createGain();
+    midOsc.type = "square";
+    midOsc.frequency.setValueAtTime(250, now);
+    midOsc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+    midGain.gain.setValueAtTime(0.3, now);
+    midGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    midOsc.connect(midGain);
+    midGain.connect(this.masterGain);
+
+    boomOsc.start(now);
+    boomOsc.stop(now + 0.3);
+    midOsc.start(now);
+    midOsc.stop(now + 0.2);
+  }
+
+  /**
+   * Som de dano de contato/colisão (efeito menor)
+   */
+  playContactDamageSound(): void {
+    this.initAudioContext();
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Som de impacto rápido
+    const impactOsc = this.audioContext.createOscillator();
+    const impactGain = this.audioContext.createGain();
+    impactOsc.type = "sine";
+    impactOsc.frequency.setValueAtTime(150, now);
+    impactOsc.frequency.exponentialRampToValueAtTime(30, now + 0.1);
+    impactGain.gain.setValueAtTime(0.25, now);
+    impactGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    impactOsc.connect(impactGain);
+    impactGain.connect(this.masterGain);
+
+    impactOsc.start(now);
+    impactOsc.stop(now + 0.1);
+  }
+
+  /**
+   * Som de game over (efeito sinistro)
+   */
+  playGameOverSound(): void {
+    this.initAudioContext();
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Descida sinistro
+    const failOsc = this.audioContext.createOscillator();
+    const failGain = this.audioContext.createGain();
+    failOsc.type = "sine";
+    failOsc.frequency.setValueAtTime(400, now);
+    failOsc.frequency.exponentialRampToValueAtTime(80, now + 0.5);
+    failGain.gain.setValueAtTime(0.3, now);
+    failGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    failOsc.connect(failGain);
+    failGain.connect(this.masterGain);
+
+    failOsc.start(now);
+    failOsc.stop(now + 0.5);
+  }
+
+  /**
+   * Som de aviso baixo (quando vida está baixa)
+   */
+  playLowHealthWarning(): void {
+    this.initAudioContext();
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Bip repetido
+    for (let i = 0; i < 2; i++) {
+      const warnOsc = this.audioContext.createOscillator();
+      const warnGain = this.audioContext.createGain();
+      warnOsc.type = "sine";
+      warnOsc.frequency.value = 800;
+      warnGain.gain.setValueAtTime(0.2, now + i * 0.15);
+      warnGain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.1);
+      warnOsc.connect(warnGain);
+      warnGain.connect(this.masterGain);
+
+      warnOsc.start(now + i * 0.15);
+      warnOsc.stop(now + i * 0.15 + 0.1);
+    }
+  }
+
+  /**
    * Define o volume (0-1)
    */
   setVolume(volume: number): void {

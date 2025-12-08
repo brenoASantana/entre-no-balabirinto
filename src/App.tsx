@@ -1,8 +1,14 @@
-import React from "react";
+import type React from "react";
 import { GameCanvas } from "./ui";
+import Scorecard from "./ui/components/Scorecard";
 
 const App: React.FC = () => {
-  return <GameCanvas />;
+  return (
+    <>
+      <Scorecard />
+      <GameCanvas />
+    </>
+  );
 };
 
 export default App;

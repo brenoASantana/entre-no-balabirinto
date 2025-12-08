@@ -38,6 +38,10 @@ export const useAudio = () => {
     playShootSound: () => audioRef.current.playShootSound(),
     playHitSound: () => audioRef.current.playHitSound(),
     playDeathSound: () => audioRef.current.playDeathSound(),
+    playEnemyDeathSound: () => audioRef.current.playEnemyDeathSound(),
+    playContactDamageSound: () => audioRef.current.playContactDamageSound(),
+    playGameOverSound: () => audioRef.current.playGameOverSound(),
+    playLowHealthWarning: () => audioRef.current.playLowHealthWarning(),
     setVolume: (volume: number) => audioRef.current.setVolume(volume),
     getVolume: () => audioRef.current.getVolume(),
   };

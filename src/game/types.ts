@@ -38,15 +38,48 @@ export interface Enemy {
   knockbackResistance: number;
 }
 
+export type WeaponType =
+  | "rapid_fire"
+  | "spread_shot"
+  | "piercing"
+  | "explosion";
+
+export interface Weapon {
+  id: string;
+  type: WeaponType;
+  position: Vector2;
+  lifetime: number;
+  maxLifetime: number;
+  size: number;
+}
+
+export interface PlayerWeapon {
+  type: WeaponType;
+  duration: number;
+  startTime: number;
+}
+
+export interface Particle {
+  position: Vector2;
+  velocity: Vector2;
+  lifetime: number;
+  maxLifetime: number;
+  radius: number;
+  color: string;
+}
+
 export interface GameState {
   player: PlayerState;
   mousePosition: Vector2;
   isRunning: boolean;
   bullets: Bullet[];
   enemies: Enemy[];
+  weapons: Weapon[];
+  particles: Particle[];
   score: number;
   wave: number;
   timeAlive: number;
+  activeWeapon: PlayerWeapon | null;
 }
 
 export interface KeysPressed {

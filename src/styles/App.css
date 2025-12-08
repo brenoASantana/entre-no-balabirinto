@@ -20,4 +20,119 @@ body {
 canvas {
   display: block;
   background-color: #1a1a1a;
+  cursor: none; /* Oculta o cursor padrão, mostra a mira customizada */
+}
+
+/* ==================== SCORECARD ==================== */
+.scorecard-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  z-index: 1000;
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a4a #1a1a1a;
+}
+
+.scorecard {
+  background: rgba(20, 20, 40, 0.95);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 280px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  font-family: "Courier New", monospace;
+}
+
+.scorecard h2 {
+  color: #00ff00;
+  margin-bottom: 16px;
+  font-size: 18px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.scorecard-section {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.scorecard-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.scorecard-section h3 {
+  color: #00ff00;
+  font-size: 14px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.scorecard-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scorecard-stats.highlight-gold {
+  background: rgba(255, 215, 0, 0.05);
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 3px solid #ffd700;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.stat-label {
+  color: #00ff00;
+  opacity: 0.8;
+}
+
+.stat-value {
+  color: #fff;
+  font-weight: bold;
+  min-width: 60px;
+  text-align: right;
+}
+
+.stat-gold {
+  color: #ffd700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
+}
+
+.empty-message {
+  color: #888;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+  font-style: italic;
+}
+
+/* Scrollbar customizado */
+.scorecard-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scorecard-container::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.scorecard-container::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 4px;
+}
+
+.scorecard-container::-webkit-scrollbar-thumb:hover {
+  background: #6a6a6a;
 }
