@@ -1,4 +1,4 @@
-# Gungeon Game
+# Entre no Balabirinto
 
 Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com React, TypeScript e Vite. O jogo apresenta uma mecânica de movimentação do jogador e um indicador de mira que rotaciona em direção ao mouse.
 
@@ -7,7 +7,7 @@ Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com React, Ty
 A estrutura do projeto é a seguinte:
 
 ```
-gungeon-game
+entre-no-balabirinto
 ├── src
 │   ├── main.tsx          # Ponto de entrada da aplicação
 │   ├── App.tsx           # Componente principal da aplicação
