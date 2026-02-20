@@ -1,40 +1,49 @@
 import {
-  BULLET_LIFETIME,
-  BULLET_RADIUS,
-  BULLET_SPEED,
-  CONTACT_COOLDOWN,
-  CONTACT_DAMAGE,
-  ENEMIES_INCREASE_PER_WAVE,
-  ENEMY_DAMAGE,
-  ENEMY_HEIGHT,
-  ENEMY_MAX_HEALTH,
-  ENEMY_SPEED,
-  ENEMY_WIDTH,
-  FIRE_RATE,
-  GAME_HEIGHT,
-  GAME_WIDTH,
-  INITIAL_ENEMIES_PER_WAVE,
-  PLAYER_HEIGHT,
-  PLAYER_MAX_HEALTH,
-  PLAYER_SPEED,
-  PLAYER_WIDTH,
-  WAVE_DELAY,
-  WEAPON_CONFIGS,
-  WEAPON_DURATION,
-  WEAPON_LIFETIME,
-  WEAPON_SIZE,
-  WEAPON_SPAWN_CHANCE,
+    BOSS_CHARGE_TIME,
+    BOSS_CONFIGS,
+    BOSS_HEIGHT,
+    BOSS_SPAWN_WAVE,
+    BOSS_SPECIAL_COOLDOWN,
+    BOSS_SPEED,
+    BOSS_WIDTH,
+    BULLET_LIFETIME,
+    BULLET_RADIUS,
+    BULLET_SPEED,
+    CONTACT_COOLDOWN,
+    CONTACT_DAMAGE,
+    ENEMIES_INCREASE_PER_WAVE,
+    ENEMY_DAMAGE,
+    ENEMY_HEIGHT,
+    ENEMY_MAX_HEALTH,
+    ENEMY_SPEED,
+    ENEMY_WIDTH,
+    FIRE_RATE,
+    GAME_HEIGHT,
+    GAME_WIDTH,
+    INITIAL_ENEMIES_PER_WAVE,
+    PLAYER_HEIGHT,
+    PLAYER_MAX_HEALTH,
+    PLAYER_SPEED,
+    PLAYER_WIDTH,
+    WAVE_DELAY,
+    WEAPON_CONFIGS,
+    WEAPON_DURATION,
+    WEAPON_LIFETIME,
+    WEAPON_SIZE,
+    WEAPON_SPAWN_CHANCE,
 } from "../game/constants";
 import type {
-  Bullet,
-  Enemy,
-  GameState,
-  KeysPressed,
-  Particle,
-  PlayerState,
-  Vector2,
-  Weapon,
-  WeaponType,
+    Boss,
+    BossType,
+    Bullet,
+    Enemy,
+    GameState,
+    KeysPressed,
+    Particle,
+    PlayerState,
+    Vector2,
+    Weapon,
+    WeaponType,
 } from "../game/types";
 import { clamp, getAngle, normalizeVector } from "../game/utils/math";
 import { saveGameStats } from "../utils/storage";
@@ -71,6 +80,7 @@ export class GameEngine {
     isRunning: true,
     bullets: [],
     enemies: [],
+    bosses: [],
     weapons: [],
     particles: [],
     score: 0,
@@ -93,6 +103,8 @@ export class GameEngine {
   private nextEnemyId = 0;
   private nextWeaponId = 0;
   private lastContactDamageTime = 0; // Para evitar dano contínuo
+  private bossSpawned = false; // Controla se o boss já foi spawned nesta wave
+  private nextBossId = 0;
 
   /**
    * Padrão Singleton: garante uma única instância
@@ -112,6 +124,7 @@ export class GameEngine {
       ...this.gameState,
       bullets: [...this.gameState.bullets],
       enemies: [...this.gameState.enemies],
+      bosses: [...this.gameState.bosses],
     });
   }
 
@@ -227,6 +240,43 @@ export class GameEngine {
 
       this.gameState.enemies.push(enemy);
     }
+  }
+
+  /**
+   * Spawn de um boss quando certas condições são atingidas
+   */
+  private spawnBoss(): void {
+    const bossTypes: BossType[] = ["titan", "vortex", "inferno", "shadow"];
+    const randomType =
+      bossTypes[Math.floor(Math.random() * bossTypes.length)];
+    const config = BOSS_CONFIGS[randomType];
+
+    // Spawn no centro do mapa
+    const boss: Boss = {
+      id: `boss-${this.nextBossId++}`,
+      type: randomType,
+      position: {
+        x: GAME_WIDTH / 2 - BOSS_WIDTH / 2,
+        y: BOSS_HEIGHT,
+      },
+      velocity: { x: 0, y: 0 },
+      width: BOSS_WIDTH,
+      height: BOSS_HEIGHT,
+      health: config.health,
+      maxHealth: config.health,
+      speed: BOSS_SPEED,
+      damage: config.damage,
+      knockbackResistance: config.knockbackResistance,
+      phase: 1,
+      maxPhase: config.maxPhase,
+      chargeTime: 0,
+      maxChargeTime: BOSS_CHARGE_TIME,
+      specialAttackCooldown: BOSS_SPECIAL_COOLDOWN,
+      maxSpecialAttackCooldown: BOSS_SPECIAL_COOLDOWN,
+      isBoss: true,
+    };
+
+    this.gameState.bosses.push(boss);
   }
 
   /**
@@ -357,11 +407,20 @@ export class GameEngine {
     }
 
     // ==================== SPAWN WAVES ====================
-    if (this.gameState.enemies.length === 0) {
+    if (this.gameState.enemies.length === 0 && this.gameState.bosses.length === 0) {
       this.lastWaveTime += deltaTime;
       if (this.lastWaveTime >= WAVE_DELAY) {
         this.gameState.wave++;
         this.spawnWave();
+
+        // Spawn boss a cada BOSS_SPAWN_WAVE waves
+        if (this.gameState.wave % BOSS_SPAWN_WAVE === 0 && !this.bossSpawned) {
+          this.spawnBoss();
+          this.bossSpawned = true;
+        } else if (this.gameState.wave % BOSS_SPAWN_WAVE !== 0) {
+          this.bossSpawned = false;
+        }
+
         this.lastWaveTime = 0;
       }
     }
@@ -453,6 +512,93 @@ export class GameEngine {
       }
     }
 
+    // ==================== UPDATE BOSSES ====================
+    for (let i = this.gameState.bosses.length - 1; i >= 0; i--) {
+      const boss = this.gameState.bosses[i];
+
+      // Movimento do boss em direção ao player
+      const dirX = playerCenterX - (boss.position.x + boss.width / 2);
+      const dirY = playerCenterY - (boss.position.y + boss.height / 2);
+      const dirNormalized = normalizeVector(dirX, dirY);
+
+      boss.velocity = {
+        x: dirNormalized.x * boss.speed * 0.7, // 70% da velocidade normal
+        y: dirNormalized.y * boss.speed * 0.7,
+      };
+
+      // Atualiza posição do boss
+      boss.position.x += boss.velocity.x * deltaTime;
+      boss.position.y += boss.velocity.y * deltaTime;
+
+      // Atualiza cooldown de ataque especial
+      if (boss.specialAttackCooldown > 0) {
+        boss.specialAttackCooldown -= deltaTime;
+      }
+
+      // Atualiza charge time do ataque especial
+      if (boss.chargeTime > 0) {
+        boss.chargeTime -= deltaTime;
+      } else if (boss.specialAttackCooldown <= 0) {
+        // Executa ataque especial
+        this.bossBossSpecialAttack(boss);
+        boss.specialAttackCooldown = BOSS_SPECIAL_COOLDOWN;
+      }
+
+      // Colisão com balas
+      for (let j = 0; j < this.gameState.bullets.length; j++) {
+        const bullet = this.gameState.bullets[j];
+
+        if (
+          this.checkCircleRectCollision(
+            bullet.position.x,
+            bullet.position.y,
+            bullet.radius,
+            boss
+          )
+        ) {
+          // Dano ao boss
+          boss.health -= 10;
+          this.gameState.bullets.splice(j, 1);
+          j--;
+
+          if (boss.health <= 0) {
+            const bossPos = {
+              x: boss.position.x + boss.width / 2,
+              y: boss.position.y + boss.height / 2,
+            };
+            const bossConfig = BOSS_CONFIGS[boss.type];
+
+            // Remove boss
+            this.gameState.bosses.splice(i, 1);
+
+            // Cria partículas de explosão GRANDE
+            for (let p = 0; p < 50; p++) {
+              this.createExplosionParticles(bossPos);
+            }
+
+            // Score MUITO maior para derrotar boss
+            this.gameState.score +=
+              bossConfig.scoreReward * this.gameState.wave;
+
+            // Garante spawn de arma ao derrotar boss
+            for (let w = 0; w < 2; w++) {
+              this.spawnWeapon(bossPos);
+            }
+          }
+          break;
+        }
+      }
+
+      // Colisão com player (dano contínuo)
+      if (this.checkRectRectCollision(this.gameState.player, boss)) {
+        const now = Date.now() / 1000;
+        if (now - this.lastContactDamageTime > CONTACT_COOLDOWN) {
+          this.gameState.player.health -= boss.damage;
+          this.lastContactDamageTime = now;
+        }
+      }
+    }
+
     // ==================== CHECK GAME OVER ====================
     if (this.gameState.player.health <= 0) {
       this.gameState.isRunning = false;
@@ -464,6 +610,138 @@ export class GameEngine {
         wave: this.gameState.wave,
         timestamp: Date.now(),
       });
+    }
+  }
+
+  /**
+   * Ataque especial do boss (dispara balas em padrão específico)
+   */
+  private bossBossSpecialAttack(boss: Boss): void {
+    const bossConfig = BOSS_CONFIGS[boss.type];
+    const centerX = boss.position.x + boss.width / 2;
+    const centerY = boss.position.y + boss.height / 2;
+
+    switch (bossConfig.specialAttack) {
+      case "shockwave": {
+        // Dispara balas em círculo ao redor do boss
+        const bulletCount = 8;
+        for (let i = 0; i < bulletCount; i++) {
+          const angle = (i / bulletCount) * Math.PI * 2;
+          const vx = Math.cos(angle) * BULLET_SPEED;
+          const vy = Math.sin(angle) * BULLET_SPEED;
+
+          const bullet: Bullet = {
+            id: `boss-bullet-${this.nextBulletId++}`,
+            position: { x: centerX, y: centerY },
+            velocity: { x: vx, y: vy },
+            angle,
+            speed: BULLET_SPEED,
+            lifetime: 0,
+            maxLifetime: BULLET_LIFETIME,
+            radius: BULLET_RADIUS,
+          };
+          this.gameState.bullets.push(bullet);
+        }
+        break;
+      }
+
+      case "spiral": {
+        // Dispara balas em padrão espiral
+        const bulletCount = 12;
+        for (let i = 0; i < bulletCount; i++) {
+          const angle =
+            (i / bulletCount) * Math.PI * 2 +
+            (this.gameState.timeAlive * 3) % (Math.PI * 2);
+          const vx = Math.cos(angle) * BULLET_SPEED * 0.8;
+          const vy = Math.sin(angle) * BULLET_SPEED * 0.8;
+
+          const bullet: Bullet = {
+            id: `boss-bullet-${this.nextBulletId++}`,
+            position: { x: centerX, y: centerY },
+            velocity: { x: vx, y: vy },
+            angle,
+            speed: BULLET_SPEED * 0.8,
+            lifetime: 0,
+            maxLifetime: BULLET_LIFETIME,
+            radius: BULLET_RADIUS,
+          };
+          this.gameState.bullets.push(bullet);
+        }
+        break;
+      }
+
+      case "fireball": {
+        // Dispara bolas de fogo grandes em 3 direções
+        const dirX = this.gameState.player.position.x -
+          boss.position.x +
+          (Math.random() - 0.5) * 100;
+        const dirY = this.gameState.player.position.y -
+          boss.position.y +
+          (Math.random() - 0.5) * 100;
+        const dirNormalized = normalizeVector(dirX, dirY);
+
+        for (let spread = -1; spread <= 1; spread++) {
+          const angle = Math.atan2(dirNormalized.y, dirNormalized.x);
+          const spreadAngle = angle + (spread * Math.PI) / 6;
+          const vx = Math.cos(spreadAngle) * BULLET_SPEED;
+          const vy = Math.sin(spreadAngle) * BULLET_SPEED;
+
+          const bullet: Bullet = {
+            id: `boss-bullet-${this.nextBulletId++}`,
+            position: { x: centerX, y: centerY },
+            velocity: { x: vx, y: vy },
+            angle: spreadAngle,
+            speed: BULLET_SPEED,
+            lifetime: 0,
+            maxLifetime: BULLET_LIFETIME,
+            radius: BULLET_RADIUS * 2, // Bullet maior
+          };
+          this.gameState.bullets.push(bullet);
+        }
+        break;
+      }
+
+      case "teleport": {
+        // Teleporta e dispara em múltiplos locais
+        const positions = [
+          { x: 150, y: 150 },
+          { x: GAME_WIDTH - 150, y: 150 },
+          { x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 },
+        ];
+
+        const targetPos =
+          positions[Math.floor(Math.random() * positions.length)];
+        boss.position = {
+          x: targetPos.x - boss.width / 2,
+          y: targetPos.y - boss.height / 2,
+        };
+
+        // Dispara em direção ao player
+        const dirX = this.gameState.player.position.x - targetPos.x;
+        const dirY = this.gameState.player.position.y - targetPos.y;
+        const dirNormalized = normalizeVector(dirX, dirY);
+
+        const bulletCount = 6;
+        for (let i = 0; i < bulletCount; i++) {
+          const angle = Math.atan2(dirNormalized.y, dirNormalized.x);
+          const spreadAngle = angle + ((i - bulletCount / 2) * Math.PI) / 6;
+          const vx = Math.cos(spreadAngle) * BULLET_SPEED;
+          const vy = Math.sin(spreadAngle) * BULLET_SPEED;
+
+          const bullet: Bullet = {
+            id: `boss-bullet-${this.nextBulletId++}`,
+            position: { x: targetPos.x, y: targetPos.y },
+            velocity: { x: vx, y: vy },
+            angle: spreadAngle,
+            speed: BULLET_SPEED,
+            lifetime: 0,
+            maxLifetime: BULLET_LIFETIME,
+            radius: BULLET_RADIUS,
+          };
+          this.gameState.bullets.push(bullet);
+        }
+        break;
+      }
     }
   }
 
@@ -525,6 +803,7 @@ export class GameEngine {
       isRunning: true,
       bullets: [],
       enemies: [],
+      bosses: [],
       weapons: [],
       particles: [],
       score: 0,
@@ -539,6 +818,8 @@ export class GameEngine {
     this.nextBulletId = 0;
     this.nextEnemyId = 0;
     this.nextWeaponId = 0;
+    this.bossSpawned = false;
+    this.nextBossId = 0;
   }
 
   /**

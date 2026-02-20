@@ -2,6 +2,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameEngine, SpriteManager } from "../../core";
 import {
+    BOSS_CONFIGS,
     BULLET_RADIUS,
     GAME_HEIGHT,
     GAME_WIDTH,
@@ -178,6 +179,100 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ isPaused = false }) => {
         enemy.position.y - 8,
         healthBarWidth * healthPercent,
         healthBarHeight
+      );
+    }
+
+    // ==================== DESENHAR BOSSES ====================
+    for (let i = 0; i < gameState.bosses.length; i++) {
+      const boss = gameState.bosses[i];
+      const bossConfig = BOSS_CONFIGS[boss.type];
+
+      // Aura animada ao redor do boss
+      const pulseSize = Math.sin(gameState.timeAlive * 3) * 5 + 15;
+      ctx.fillStyle = bossConfig.color
+        .replace(")", ", 0.2)")
+        .replace("rgb", "rgba");
+      ctx.beginPath();
+      ctx.arc(
+        boss.position.x + boss.width / 2,
+        boss.position.y + boss.height / 2,
+        boss.width / 2 + pulseSize,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+
+      // Borda brilhante
+      ctx.strokeStyle = bossConfig.color;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(
+        boss.position.x,
+        boss.position.y,
+        boss.width,
+        boss.height
+      );
+
+      // Corpo do boss (gradiente)
+      const gradient = ctx.createLinearGradient(
+        boss.position.x,
+        boss.position.y,
+        boss.position.x + boss.width,
+        boss.position.y + boss.height
+      );
+      gradient.addColorStop(0, bossConfig.color);
+      gradient.addColorStop(1, bossConfig.color.replace(")", ", 0.5)").replace("rgb", "rgba"));
+      ctx.fillStyle = gradient;
+      ctx.fillRect(
+        boss.position.x,
+        boss.position.y,
+        boss.width,
+        boss.height
+      );
+
+      // Nome do boss acima dele
+      ctx.fillStyle = bossConfig.color;
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(bossConfig.name, boss.position.x + boss.width / 2, boss.position.y - 15);
+
+      // Barra de saúde do boss (acima, grande)
+      const healthBarWidth = boss.width * 1.5;
+      const healthBarHeight = 8;
+      const healthBarX = boss.position.x + boss.width / 2 - healthBarWidth / 2;
+      const healthBarY = boss.position.y - 30;
+
+      // Fundo da barra
+      ctx.fillStyle = "#333333";
+      ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+      // Barra de saúde preenchida
+      const healthPercent = boss.health / boss.maxHealth;
+      ctx.fillStyle =
+        healthPercent > 0.5
+          ? "#00ff00"
+          : healthPercent > 0.25
+          ? "#ffff00"
+          : "#ff0000";
+      ctx.fillRect(
+        healthBarX,
+        healthBarY,
+        healthBarWidth * healthPercent,
+        healthBarHeight
+      );
+
+      // Borda da barra
+      ctx.strokeStyle = bossConfig.color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+      // Indicador de fase/HP
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 12px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        `${Math.ceil(boss.health)}/${boss.maxHealth}`,
+        boss.position.x + boss.width / 2,
+        healthBarY - 5
       );
     }
 

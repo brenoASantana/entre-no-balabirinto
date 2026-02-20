@@ -63,3 +63,54 @@ export const WEAPON_CONFIGS = {
     explosionDamage: 25,
   },
 } as const;
+// Boss System
+export const BOSS_SPAWN_WAVE = 3; // Boss aparece a cada 3 waves
+export const BOSS_WIDTH = 60;
+export const BOSS_HEIGHT = 60;
+export const BOSS_SPEED = 100;
+export const BOSS_CHARGE_TIME = 2; // segundos para atacar especial
+export const BOSS_SPECIAL_COOLDOWN = 4; // segundos entre ataques especiais
+
+// Boss Types Config
+export const BOSS_CONFIGS = {
+  titan: {
+    name: "Titã",
+    color: "#FF4444",
+    health: 100,
+    damage: 20,
+    knockbackResistance: 0.8,
+    maxPhase: 2,
+    scoreReward: 500,
+    specialAttack: "shockwave", // ataca em círculo ao redor dele
+  },
+  vortex: {
+    name: "Vórtice",
+    color: "#00CCFF",
+    health: 80,
+    damage: 18,
+    knockbackResistance: 0.7,
+    maxPhase: 2,
+    scoreReward: 450,
+    specialAttack: "spiral", // dispara em padrão espiral
+  },
+  inferno: {
+    name: "Inferno",
+    color: "#FF6B00",
+    health: 70,
+    damage: 25,
+    knockbackResistance: 0.6,
+    maxPhase: 3,
+    scoreReward: 400,
+    specialAttack: "fireball", // dispara bolas de fogo grandes
+  },
+  shadow: {
+    name: "Sombra",
+    color: "#AA00FF",
+    health: 90,
+    damage: 22,
+    knockbackResistance: 0.75,
+    maxPhase: 2,
+    scoreReward: 480,
+    specialAttack: "teleport", // se teleporta e aparece em múltiplos locais
+  },
+} as const;

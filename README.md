@@ -23,6 +23,19 @@ Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com **React**
 - **Tela de Game Over**: Mostra estatísticas finais, comparação com recorde e opção de retry
 - **HUD Melhorado**: Barra de saúde, contador de inimigos, tempo vivo, arma ativa com timer
 
+### 🦾 Sistema de Bosses
+- **4 Tipos Únicos** de bosses com habilidades especiais
+  - **Titã**: Ataque Shockwave (círculo de balas)
+  - **Vórtice**: Ataque Espiral (balas em padrão rotativo)
+  - **Inferno**: Ataque Fireball (3 bolas de fogo grandes)
+  - **Sombra**: Ataque Teleport (múltiplos locais de ataque)
+- **Spawn Inteligente**: Boss aparece a cada 3 waves
+- **Renders Visuais**: Aura pulsante, borda brilhante, barra de saúde grande
+- **Recompensas Especiais**: Score multiplicado + 2 armas garantidas
+- **Progressão de Dificuldade**: HP e dano aumentam com as waves
+
+Ver documentação completa em [BOSSES.md](BOSSES.md)
+
 ## 📦 Stack Tecnológico
 
 - **React 18** - Biblioteca UI
