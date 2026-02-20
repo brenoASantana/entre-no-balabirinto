@@ -38,6 +38,19 @@ export interface Enemy {
   knockbackResistance: number;
 }
 
+export type BossType = "titan" | "vortex" | "inferno" | "shadow";
+
+export interface Boss extends Enemy {
+  type: BossType;
+  phase: number;
+  maxPhase: number;
+  chargeTime: number;
+  maxChargeTime: number;
+  specialAttackCooldown: number;
+  maxSpecialAttackCooldown: number;
+  isBoss: true;
+}
+
 export type WeaponType =
   | "rapid_fire"
   | "spread_shot"
@@ -74,6 +87,7 @@ export interface GameState {
   isRunning: boolean;
   bullets: Bullet[];
   enemies: Enemy[];
+  bosses: Boss[];
   weapons: Weapon[];
   particles: Particle[];
   score: number;

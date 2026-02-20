@@ -2,23 +2,27 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameEngine, SpriteManager } from "../../core";
 import {
-  BULLET_RADIUS,
-  GAME_HEIGHT,
-  GAME_WIDTH,
-  PLAYER_HEIGHT,
-  PLAYER_WIDTH,
-  WEAPON_CONFIGS,
+    BULLET_RADIUS,
+    GAME_HEIGHT,
+    GAME_WIDTH,
+    PLAYER_HEIGHT,
+    PLAYER_WIDTH,
+    WEAPON_CONFIGS,
 } from "../../game";
 import {
-  useAudio,
-  useGameLoop,
-  useGameReset,
-  useMouse,
-  usePlayerMovement,
+    useAudio,
+    useGameLoop,
+    useGameReset,
+    useMouse,
+    usePlayerMovement,
 } from "../../hooks";
 import "../../styles/App.css";
 
-const GameCanvas: React.FC = () => {
+interface GameCanvasProps {
+  isPaused?: boolean;
+}
+
+const GameCanvas: React.FC<GameCanvasProps> = ({ isPaused = false }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<GameEngine>(GameEngine.getInstance());
   const spriteManagerRef = useRef<SpriteManager>(SpriteManager.getInstance());
@@ -336,91 +340,6 @@ const GameCanvas: React.FC = () => {
       ctx.restore();
     }
 
-    // ==================== HUD ====================
-    // Health bar
-    const healthBarX = 20;
-    const healthBarY = 20;
-    const healthBarWidth = 200;
-    const healthBarHeight = 20;
-
-    ctx.fillStyle = "#333333";
-    ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
-
-    const healthPercent = player.health / player.maxHealth;
-    ctx.fillStyle =
-      healthPercent > 0.5
-        ? "#00ff00"
-        : healthPercent > 0.25
-        ? "#ffff00"
-        : "#ff0000";
-    ctx.fillRect(
-      healthBarX,
-      healthBarY,
-      healthBarWidth * healthPercent,
-      healthBarHeight
-    );
-
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
-
-    // Texto de health com fonte maior
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 18px Arial";
-    ctx.fillText(
-      `HP: ${Math.round(player.health)}/${player.maxHealth}`,
-      healthBarX + 210,
-      healthBarY + 18
-    );
-
-    // Volume control visual
-    const volumeBarX = healthBarX;
-    const volumeBarY = healthBarY + 40;
-    const volumeBarWidth = 100;
-    const volumeBarHeight = 8;
-    const currentVolume = audio.getVolume();
-
-    ctx.fillStyle = "#333333";
-    ctx.fillRect(volumeBarX, volumeBarY, volumeBarWidth, volumeBarHeight);
-
-    ctx.fillStyle = "#00aaff";
-    ctx.fillRect(
-      volumeBarX,
-      volumeBarY,
-      volumeBarWidth * currentVolume,
-      volumeBarHeight
-    );
-
-    ctx.strokeStyle = "#00aaff";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(volumeBarX, volumeBarY, volumeBarWidth, volumeBarHeight);
-
-    ctx.font = "14px Arial";
-    ctx.fillText("Volume", volumeBarX, volumeBarY - 5);
-
-    // Score com fonte MUITO MAIOR
-    ctx.font = "bold 32px Arial";
-    ctx.fillStyle = "#ffff00";
-    ctx.fillText(`Score: ${gameState.score}`, GAME_WIDTH - 350, 50);
-
-    // Wave
-    ctx.font = "bold 18px Arial";
-    ctx.fillText(`Wave: ${gameState.wave}`, GAME_WIDTH - 250, 70);
-
-    // Inimigos restantes
-    ctx.font = "14px Arial";
-    ctx.fillText(`Enemies: ${gameState.enemies.length}`, GAME_WIDTH - 250, 100);
-
-    // Tempo vivo
-    const timeSeconds = Math.floor(gameState.timeAlive);
-    const minutes = Math.floor(timeSeconds / 60);
-    const seconds = timeSeconds % 60;
-    ctx.fillText(
-      `Time: ${minutes}:${seconds.toString().padStart(2, "0")}`,
-      GAME_WIDTH - 250,
-      130
-    );
-
     // ==================== MIRA/CROSSHAIR ====================
     const mouseX = gameState.mousePosition.x;
     const mouseY = gameState.mousePosition.y;
@@ -466,98 +385,7 @@ const GameCanvas: React.FC = () => {
     ctx.arc(mouseX, mouseY, 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // ==================== HUD - ARMA ATIVA ====================
-    if (gameState.activeWeapon) {
-      const weaponConfig = WEAPON_CONFIGS[gameState.activeWeapon.type];
-      const elapsedTime =
-        (Date.now() - gameState.activeWeapon.startTime) / 1000;
-      const remainingTime = gameState.activeWeapon.duration - elapsedTime;
-      const progress = remainingTime / gameState.activeWeapon.duration;
-
-      // Background
-      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(GAME_WIDTH - 250, GAME_HEIGHT - 80, 240, 70);
-
-      // Nome da arma
-      ctx.fillStyle = weaponConfig.color;
-      ctx.font = "bold 16px Arial";
-      ctx.textAlign = "left";
-      ctx.fillText(
-        `Arma: ${weaponConfig.name}`,
-        GAME_WIDTH - 240,
-        GAME_HEIGHT - 55
-      );
-
-      // Barra de duração
-      const barWidth = 220;
-      const barHeight = 10;
-      ctx.fillStyle = "#333333";
-      ctx.fillRect(GAME_WIDTH - 240, GAME_HEIGHT - 30, barWidth, barHeight);
-
-      ctx.fillStyle = weaponConfig.color;
-      ctx.fillRect(
-        GAME_WIDTH - 240,
-        GAME_HEIGHT - 30,
-        barWidth * progress,
-        barHeight
-      );
-
-      ctx.strokeStyle = weaponConfig.color;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(GAME_WIDTH - 240, GAME_HEIGHT - 30, barWidth, barHeight);
-
-      // Tempo restante
-      ctx.fillStyle = weaponConfig.color;
-      ctx.font = "12px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(
-        `${remainingTime.toFixed(1)}s`,
-        GAME_WIDTH - 130,
-        GAME_HEIGHT - 15
-      );
-    }
-
-    // Game Over
-    if (!gameState.isRunning) {
-      // Overlay semitransparente
-      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-      // Texto Game Over
-      ctx.fillStyle = "#ff0000";
-      ctx.font = "bold 48px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("GAME OVER", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 50);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "20px Arial";
-      ctx.fillText(
-        `Final Score: ${gameState.score}`,
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 20
-      );
-      ctx.fillText(
-        `Wave Reached: ${gameState.wave}`,
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 50
-      );
-      ctx.fillText(
-        `Time Alive: ${minutes}:${seconds.toString().padStart(2, "0")}`,
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 80
-      );
-
-      // Instrução de restart
-      ctx.fillStyle = "#00ff00";
-      ctx.font = "bold 18px Arial";
-      ctx.fillText(
-        "Pressione R para reiniciar",
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 120
-      );
-
-      ctx.textAlign = "left";
-    }
+    // Game Over renderizado pelo App.tsx
   }, [audio, spritesLoaded]); // Dependências do useCallback
 
   // Setup do game loop

@@ -8,9 +8,20 @@ Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com **React**
 - 🎯 Sistema de mira inteligente seguindo o mouse
 - ⌨️ Sistema de movimentação com teclado (WASD)
 - 🎵 Trilha sonora imersiva ("Unstoppable Force")
-- 🎨 Interface responsiva
+- 🎨 Interface responsiva com Menu, Pausa e Game Over
 - 📱 Suporte a diferentes resoluções
 - 🔧 Configuração com Biome para linting e formatação
+- 🎬 Sistema de screens (Menu → Playing → Paused → GameOver)
+- 📊 HUD completo com saúde, score, wave e armas ativas
+
+## 🆕 Atualizações Recentes
+
+### Interface e Navegação
+- **Menu Inicial**: Tela de boas-vindas com controles, objetivos e dicas
+- **Sistema de Screens**: Menu → Playing → Paused → GameOver com transições suaves
+- **Tela de Pausa (ESC)**: Pause o jogo para retomar ou voltar ao menu
+- **Tela de Game Over**: Mostra estatísticas finais, comparação com recorde e opção de retry
+- **HUD Melhorado**: Barra de saúde, contador de inimigos, tempo vivo, arma ativa com timer
 
 ## 📦 Stack Tecnológico
 
@@ -18,7 +29,7 @@ Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com **React**
 - **TypeScript** - Tipagem estática
 - **Vite** - Build tool rápido
 - **Biome** - Linter e formatter
-- **CSS3** - Estilização
+- **CSS3** - Estilização com tema cyberpunk
 
 ## 📁 Estrutura do Projeto
 
@@ -26,7 +37,7 @@ Este é um projeto de jogo estilo "Enter the Gungeon" desenvolvido com **React**
 entre-no-balabirinto
 ├── src
 │   ├── main.tsx                    # Ponto de entrada da aplicação
-│   ├── App.tsx                     # Componente principal
+│   ├── App.tsx                     # Gerenciador de screens
 │   ├── components/                 # Componentes React
 │   ├── core/                       # Lógica central do jogo
 │   │   ├── AudioGenerator.ts       # Gerador de áudio
@@ -42,10 +53,21 @@ entre-no-balabirinto
 │   │   ├── useMouse.ts             # Captura do mouse
 │   │   └── useAudio.ts             # Sistema de áudio
 │   ├── types/                      # Tipos TypeScript
+│   │   ├── game.ts                 # Tipos do jogo
+│   │   └── screen.ts               # Tipos de screens
 │   ├── ui/                         # Componentes de UI
+│   │   ├── components/
+│   │   │   ├── GameCanvas.tsx      # Canvas principal
+│   │   │   ├── GameHUD.tsx         # HUD durante o jogo
+│   │   │   ├── Menu.tsx            # Tela de menu
+│   │   │   ├── GameOver.tsx        # Tela de game over
+│   │   │   ├── PauseScreen.tsx     # Tela de pausa
+│   │   │   └── Scorecard.tsx       # Placar de histórico
+│   │   └── index.ts
 │   ├── utils/                      # Utilitários
 │   ├── assets/                     # Imagens e áudio
-│   └── styles/                     # Estilos CSS
+│   ├── styles/                     # Estilos CSS
+│   └── types/                      # Tipos TypeScript
 ├── index.html                      # Template HTML
 ├── biome.json                      # Configuração do Biome
 ├── package.json                    # Dependências do projeto
@@ -97,7 +119,9 @@ A versão otimizada será gerada na pasta `dist/`.
 | **A**     | Mover para a esquerda                 |
 | **S**     | Mover para baixo                      |
 | **D**     | Mover para a direita                  |
-| **Mouse** | Rotaciona a mira na direção do cursor |
+| **Mouse** | Rotaciona a mira e atira              |
+| **ESC**   | Pausar/Retomar o jogo                 |
+| **R**     | Reiniciar o jogo                      |
 
 ## 🎵 Trilha Sonora
 
