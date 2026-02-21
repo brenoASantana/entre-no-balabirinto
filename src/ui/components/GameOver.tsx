@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
+import { useLeaderboard } from "../../hooks/useLeaderboard";
 import type { ScreenContextType } from "../../types/screen";
 import type { StorageData } from "../../utils/storage";
 import { getStorageData } from "../../utils/storage";
@@ -21,6 +22,10 @@ const GameOver: React.FC<GameOverProps> = ({
 }) => {
   const [stats, setStats] = useState<StorageData | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
+  const [playerName, setPlayerName] = useState("Player");
+  const [isSavingToAPI, setIsSavingToAPI] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const { savingScore, isOnline } = useLeaderboard();
 
   useEffect(() => {
     const data = getStorageData();
@@ -30,7 +35,37 @@ const GameOver: React.FC<GameOverProps> = ({
     if (data.bestScore && score > data.bestScore.score) {
       setIsNewRecord(true);
     }
-  }, [score]);
+
+    // Tenta salvar score na API se disponível
+    const saveToAPI = async () => {
+      if (!isOnline) return;
+
+      setIsSavingToAPI(true);
+      setApiError(null);
+
+      try {
+        const result = await savingScore({
+          playerName: playerName || "Anonymous",
+          score,
+          wave,
+          timeAlive,
+        });
+
+        if (!result) {
+          setApiError("Não foi possível salvar o score no servidor");
+        }
+      } catch (err) {
+        console.error("Erro ao salvar score na API:", err);
+        setApiError("Erro ao sincronizar com servidor");
+      } finally {
+        setIsSavingToAPI(false);
+      }
+    };
+
+    // Salva após um breve delay para garantir que os dados foram processados
+    const saveTimer = setTimeout(saveToAPI, 500);
+    return () => clearTimeout(saveTimer);
+  }, [score, wave, timeAlive, playerName, isOnline, savingScore]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -49,6 +84,20 @@ const GameOver: React.FC<GameOverProps> = ({
 
         <h1 className="gameover-title">GAME OVER</h1>
 
+        {/* Nome do Jogador */}
+        <div className="player-name-section">
+          <label htmlFor="playerName">👤 Seu Nome:</label>
+          <input
+            id="playerName"
+            type="text"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            maxLength={30}
+            placeholder="Digite seu nome"
+            className="player-name-input"
+          />
+        </div>
+
         <div className="gameover-stats">
           <div className="stat-box">
             <span className="stat-label">Pontuação</span>
@@ -65,6 +114,39 @@ const GameOver: React.FC<GameOverProps> = ({
             <span className="stat-value">{formatTime(timeAlive)}</span>
           </div>
         </div>
+
+        {/* Status da API */}
+        {isOnline && (
+          <div
+            className={`api-status ${
+              isSavingToAPI ? "saving" : apiError ? "error" : "success"
+            }`}
+          >
+            {isSavingToAPI ? (
+              <>
+                <span className="status-icon">⏳</span>
+                <span>Sincronizando com servidor...</span>
+              </>
+            ) : apiError ? (
+              <>
+                <span className="status-icon">⚠️</span>
+                <span>{apiError}</span>
+              </>
+            ) : (
+              <>
+                <span className="status-icon">✅</span>
+                <span>Score sincronizado com leaderboard</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {!isOnline && (
+          <div className="api-status offline">
+            <span className="status-icon">📱</span>
+            <span>Score salvo localmente (servidor indisponível)</span>
+          </div>
+        )}
 
         {stats && (
           <div className="comparison-stats">

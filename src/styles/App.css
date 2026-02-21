@@ -532,6 +532,88 @@ canvas {
   text-align: center;
 }
 
+.player-name-section {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-name-section label {
+  color: #00ff00;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.player-name-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #ffff00;
+  border-radius: 5px;
+  padding: 10px 15px;
+  color: #00ff00;
+  font-size: 0.95rem;
+  font-family: "Courier New", monospace;
+  transition: all 0.2s ease;
+}
+
+.player-name-input:focus {
+  outline: none;
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.player-name-input::placeholder {
+  color: #666;
+}
+
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: 2px solid;
+}
+
+.api-status.success {
+  background: rgba(0, 255, 0, 0.1);
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.api-status.saving {
+  background: rgba(0, 150, 255, 0.1);
+  border-color: #00aaff;
+  color: #00aaff;
+  animation: pulse 1s infinite;
+}
+
+.api-status.error {
+  background: rgba(255, 100, 100, 0.1);
+  border-color: #ff6464;
+  color: #ff6464;
+}
+
+.api-status.offline {
+  background: rgba(255, 165, 0, 0.1);
+  border-color: #ffa500;
+  color: #ffa500;
+}
+
+.api-status .status-icon {
+  font-size: 1.1rem;
+  display: inline-block;
+  min-width: 20px;
+}
+
 .gameover-buttons {
   display: flex;
   gap: 15px;
